@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Post</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white font-sans text-gray-900">
+  {% include 'sidebar.html' %}
+
+  <div class="ml-60 max-w-3xl mt-6 px-4">
+    <h1 class="text-2xl font-semibold mb-4">Create a New Post</h1>
+    <form id="postForm" method="post" action="/create_post" enctype="multipart/form-data" class="flex flex-col gap-4 max-w-md">
+      <label for="imageInput">Upload Image:</label>
+      <input type="file" id="imageInput" name="image" accept="image/*" required class="p-2 border rounded" />
+      
+      <label for="captionInput">Caption:</label>
+      <textarea id="captionInput" name="caption" placeholder="Enter your caption here..." required class="resize-vertical min-h-[80px] p-2 border rounded text-base"></textarea>
+      
+      <button type="submit" id="submitBtn" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">Post</button>
+    </form>
+    <div id="message" class="mt-4 font-semibold"></div>
+  </div>
+</body>
+</html>

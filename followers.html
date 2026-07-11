@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-white">
+<head>
+  <meta charset="UTF-8" />
+  <title>Followers - Instagram Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white font-sans text-gray-900 max-w-3xl mx-auto p-4">
+  <header class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-semibold">Followers</h1>
+    <button onclick="window.history.back()" class="text-gray-600 hover:text-gray-900 font-bold text-xl">&times;</button>
+  </header>
+  <input type="text" id="searchInput" placeholder="Search followers..." class="w-full border border-gray-300 rounded px-3 py-2 mb-4" />
+  <div id="userList" class="space-y-3 max-h-[70vh] overflow-y-auto">
+    {% if followers %}
+      {% for user in followers %}
+        <div class="flex items-center justify-between user-item">
+          <div class="flex items-center space-x-4">
+<a href="/user/{{ user.username }}" class="flex items-center space-x-4">
+              <img src="{{ user.profile_pic_url or '/static/images/placeholder.png' }}" alt="{{ user.username }}" class="w-10 h-10 rounded-full object-cover" />
+              <div>
+                <div class="font-bold">{{ user.username }}</div>
+                <div class="text-gray-700 text-sm">{{ user.name }}</div>
+              </div>
+            </a>
+          </div>
+          {% if current_user_username and user.username|lower != current_user_username|lower %}
+            <button
+              class="follow-btn font-semibold py-1 px-3 rounded 
+              {% if user.is_following %}
+                bg-gray-400 text-white
+              {% else %}
+                bg-blue-500 hover:bg-blue-600 text-white
+              {% endif %}"
+              data-username="{{ user.username }}"
+              data-following="{{ 'true' if user.is_following else 'false' }}"
+            >
+              {{ 'Following' if user.is_following else 'Follow' }}
+            </button>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No users found.</p>
+    {% endif %}
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const userItems = Array.from(document.getElementsByClassName('user-item'));
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      userItems.forEach(item => {
+        const username = item.querySelector('span.font-bold').textContent.toLowerCase();
+        const name = item.querySelector('span.text-gray-700').textContent.toLowerCase();
+        item.style.display = (username.includes(query) || name.includes(query)) ? 'flex' : 'none';
+      });
+    });
+
+    // Follow/unfollow button handling
+    document.querySelectorAll('.follow-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        const username = button.getAttribute('data-username');
+        try {
+          const response = await fetch(`/api/follow/${encodeURIComponent(username)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const data = await response.json();
+          if (data.success) {
+            button.textContent = data.is_following ? 'Following' : 'Follow';
+            if (data.is_following) {
+              button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+              button.classList.add('bg-gray-400');
+            } else {
+              button.classList.remove('bg-gray-400');
+              button.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            }
+          } else {
+            alert(data.error || 'Failed to update follow status');
+          }
+        } catch (error) {
+          alert('Error updating follow status');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

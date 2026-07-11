@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-white">
+<head>
+  <meta charset="UTF-8" />
+  <title>Search Users - Instagram Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white font-sans text-gray-900">
+  {% include 'sidebar.html' %}
+  <div class="ml-60 max-w-3xl mt-6 px-4">
+    <main>
+      <h2 class="text-2xl font-semibold mb-6">Search Users</h2>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search by name..."
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+        autocomplete="off"
+      />
+      <ul id="resultsList" class="space-y-2"></ul>
+    </main>
+  </div>
+
+  <script>
+    (function() {
+      const searchInput = document.getElementById('searchInput');
+      const resultsList = document.getElementById('resultsList');
+
+      async function searchUsers(query) {
+        if (!query) {
+          resultsList.innerHTML = '';
+          return;
+        }
+        try {
+          const response = await fetch(`/api/search_users?q=${encodeURIComponent(query)}`);
+          const data = await response.json();
+          if (data.success) {
+            displayResults(data.users);
+          } else {
+            resultsList.innerHTML = '<li class="text-red-600">Error fetching results</li>';
+          }
+        } catch (error) {
+          resultsList.innerHTML = '<li class="text-red-600">Error fetching results</li>';
+        }
+      }
+
+      function displayResults(users) {
+        if (users.length === 0) {
+          resultsList.innerHTML = '<li>No users found</li>';
+          return;
+        }
+        resultsList.innerHTML = '';
+        users.forEach(user => {
+          const li = document.createElement('li');
+          li.className = 'p-2 border border-gray-300 rounded cursor-pointer hover:bg-gray-100 flex items-center space-x-4';
+
+          const img = document.createElement('img');
+          img.src = user.profile_pic_url || '/static/images/placeholder.png';
+          img.alt = user.name;
+          img.className = 'w-10 h-10 rounded-full object-cover';
+
+          const userInfoDiv = document.createElement('div');
+          userInfoDiv.className = 'flex flex-col';
+
+          const usernameSpan = document.createElement('span');
+          usernameSpan.textContent = user.username;
+          usernameSpan.className = 'font-bold';
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = user.name;
+
+          userInfoDiv.appendChild(usernameSpan);
+          userInfoDiv.appendChild(nameSpan);
+
+          li.appendChild(img);
+          li.appendChild(userInfoDiv);
+
+          li.addEventListener('click', () => {
+            window.location.href = `/user/${encodeURIComponent(user.username)}`;
+          });
+          resultsList.appendChild(li);
+        });
+      }
+
+      let debounceTimeout = null;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
+          searchUsers(searchInput.value.trim());
+        }, 300);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-50">
+<head>
+  <meta charset="UTF-8" />
+  <title>Log In - Instagram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
+  <script type="module" src="/static/firebase-login.js" defer></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-50">
+  <div class="max-w-md w-full bg-white border border-gray-300 rounded-md p-8 space-y-6">
+    <div class="flex justify-center mb-6">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/2560px-Instagram_logo.svg.png"
+        alt="Instagram Logo"
+        class="h-12 object-contain select-none"
+      />
+    </div>
+    <form class="space-y-4" id="login-form" onsubmit="return false;">
+      <input
+        type="email"
+        id="email"
+        placeholder="Email"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        required
+      />
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        required
+      />
+      <button
+        id="login"
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded text-sm transition"
+      >
+        Log In
+      </button>
+    </form>
+    <p class="text-center text-sm text-gray-600">
+      Don't have an account?
+      <a href="/register" class="text-blue-600 font-semibold hover:underline">Sign up</a>
+    </p>
+    <p id="user-info" class="text-center text-red-600 text-sm mt-2"></p>
+  </div>
+</body>
+</html>

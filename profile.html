@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-white">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Profile - Instagram Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
+  <style>
+    .instagram-logo {
+      font-family: 'Pacifico', cursive;
+    }
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 9999px;
+      object-fit: cover;
+      background-color: #d1d5db; /* gray-300 */
+    }
+    .profile-pic-placeholder {
+      width: 120px;
+      height: 120px;
+      border-radius: 9999px;
+      background-color: black;
+    }
+  </style>
+</head>
+<body class="bg-white font-sans text-gray-900">
+  {% include 'sidebar.html' %}
+  <div class="ml-60 max-w-3xl mt-6 px-4">
+    <main>
+      <div class="flex items-center space-x-6">
+        {% if profile_pic_url %}
+          <img id="profileImage" src="{{ profile_pic_url }}" alt="Profile Picture" class="profile-pic" />
+        {% else %}
+          <div class="profile-pic-placeholder"></div>
+        {% endif %}
+        <div>
+          <h2 id="username" class="text-2xl font-semibold">{{ username }}</h2>
+          <p id="fullName" class="text-gray-700">{{ full_name }}</p>
+          <p id="bio" class="mt-2 text-gray-600">{{ bio }}</p>
+          <p id="email" class="mt-1 text-gray-500 text-sm">{{ email }}</p>
+          <div class="mt-4 flex space-x-6 text-gray-700">
+            <div>
+              <span id="postsCount" class="text-xl"><span class="font-semibold">{{ posts_count or 0 }}</span> posts</span>
+            </div>
+            <button id="followersCount" class="text-xl cursor-pointer" onclick="window.location.href='/followers.html?user={{ username }}&type=followers'">
+              <span class="font-semibold">{{ followers_count or 0 }}</span> followers
+            </button>
+            <button id="followingCount" class="text-xl cursor-pointer" onclick="window.location.href='/followers.html?user={{ username }}&type=following'">
+              <span class="font-semibold">{{ following_count or 0 }}</span> following
+            </button>
+          </div>
+          {% if is_own_profile %}
+            <button
+              id="editProfileBtn"
+              class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+              onclick="window.location.href='/editprofile'"
+            >
+              Edit Profile
+            </button>
+            <h2 class="mt-8 text-xl font-semibold border-b border-gray-300 pb-2">Posts</h2>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Posts Grid -->
+      <div class="mt-4 grid grid-cols-3 gap-4">
+        {% for post in posts %}
+          <div class="aspect-w-1 aspect-h-1 overflow-hidden rounded">
+            <a href="/viewpost/{{ post.postId }}">
+              <img src="{{ post.postUrl }}" alt="Post Image" class="object-cover w-full h-full" />
+            </a>
+          </div>
+        {% else %}
+          <p class="col-span-3 text-center text-gray-500">No posts to display.</p>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+</body>
+</html>

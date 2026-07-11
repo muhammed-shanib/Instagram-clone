@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-white">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Profile - Instagram Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white font-sans text-gray-900">
+  {% include 'sidebar.html' %}
+  <div class="ml-60 max-w-3xl mt-6 px-4">
+    <main>
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center space-x-4">
+          <img src="{{ profile_pic_url or '/static/images/placeholder.png' }}" alt="{{ username }}" class="w-20 h-20 rounded-full object-cover" />
+          <div>
+            <h1 class="text-3xl font-bold">{{ username }}</h1>
+            <p class="text-lg text-gray-700">{{ full_name }}</p>
+            <p class="mt-2 text-gray-600">{{ bio }}</p>
+          </div>
+        </div>
+        <div>
+          <button id="followBtn" class="text-white font-semibold py-2 px-4 rounded {% if is_own_profile %}bg-gray-400 cursor-default{% elif is_following %}bg-gray-400 cursor-default{% else %}bg-blue-500 hover:bg-blue-600{% endif %}">
+            {% if is_own_profile %}
+              Your Profile
+            {% elif is_following %}
+              Following
+            {% else %}
+              Follow
+            {% endif %}
+          </button>
+        </div>
+      </div>
+      <div class="flex space-x-8 text-center border-t border-b border-gray-300 py-4">
+        <div>
+          <span id="postsCount" class="block text-xl"><span class="font-semibold">{{ posts_count }}</span> posts</span>
+        </div>
+        <div>
+          <button id="followersCount" class="block cursor-pointer" onclick="window.location.href='/followers.html?user={{ username }}&type=followers'">
+            <span class="font-semibold text-xl">{{ followers_count }}</span> followers
+          </button>
+        </div>
+        <div>
+          <button id="followingCount" class="block cursor-pointer" onclick="window.location.href='/followers.html?user={{ username }}&type=following'">
+            <span class="font-semibold text-xl">{{ following_count }}</span> following
+          </button>
+        </div>
+      </div>
+
+      <!-- Followers/Following Modal -->
+      <div id="followModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg w-96 max-h-[80vh] flex flex-col">
+          <div class="flex justify-between items-center p-4 border-b border-gray-300">
+            <h2 id="modalTitle" class="text-xl font-semibold">Followers</h2>
+            <button id="closeModalBtn" class="text-gray-600 hover:text-gray-900 font-bold text-xl">&times;</button>
+          </div>
+          <div class="p-4">
+            <input type="text" id="searchInput" placeholder="Search users..." class="w-full border border-gray-300 rounded px-3 py-2 mb-4" />
+            <div id="userList" class="overflow-y-auto max-h-[50vh] space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="mt-8 border-b border-gray-300">
+        <nav class="flex space-x-8">
+          <a href="#" class="pb-2 border-b-2 border-black font-semibold text-gray-900" aria-current="page">Posts</a>
+          <!-- Add other tabs here if needed -->
+        </nav>
+      </div>
+
+      <!-- Posts Grid -->
+      <div class="mt-6 grid grid-cols-3 gap-4">
+        {% for post in posts %}
+          <div class="aspect-w-1 aspect-h-1 overflow-hidden rounded">
+            <a href="/viewpost/{{ post.postId }}">
+              <img src="{{ post.postUrl }}" alt="Post Image" class="object-cover w-full h-full" />
+            </a>
+          </div>
+        {% else %}
+          <p class="col-span-3 text-center text-gray-500">No posts to display.</p>
+        {% endfor %}
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const followModal = document.getElementById('followModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const userList = document.getElementById('userList');
+    const searchInput = document.getElementById('searchInput');
+
+    let currentListType = null; // 'followers' or 'following'
+    let allUsers = [];
+    const currentUsername = "{{ current_user_username }}";
+
+    function createUserElement(user) {
+          const div = document.createElement('div');
+          div.className = 'flex items-center space-x-4';
+
+          const img = document.createElement('img');
+          img.src = user.profile_pic_url || '/static/images/placeholder.png';
+          img.alt = user.username;
+          img.className = 'w-10 h-10 rounded-full object-cover flex-shrink-0';
+
+          const usernameSpan = document.createElement('span');
+          usernameSpan.className = 'font-bold username';
+          usernameSpan.textContent = user.username;
+
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'text-gray-700 fullname';
+          nameSpan.textContent = user.name;
+
+          const userInfoDiv = document.createElement('div');
+          userInfoDiv.className = 'flex flex-col flex-grow';
+
+          userInfoDiv.appendChild(usernameSpan);
+          userInfoDiv.appendChild(nameSpan);
+
+          if (user.username.trim().toLowerCase() !== currentUsername.trim().toLowerCase()) {
+            const followBtn = document.createElement('button');
+            followBtn.className = 'ml-auto bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded flex-shrink-0';
+            followBtn.textContent = user.is_following ? 'Following' : 'Follow';
+
+            // Set initial button color based on follow status
+            if (user.is_following) {
+              followBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+              followBtn.classList.add('bg-gray-400', 'cursor-default');
+            }
+
+            followBtn.addEventListener('click', async () => {
+              try {
+                const response = await fetch(`/api/follow/${encodeURIComponent(user.username)}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.success) {
+                  user.is_following = data.is_following;
+                  followBtn.textContent = user.is_following ? 'Following' : 'Follow';
+
+                  if (user.is_following) {
+                    followBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                    followBtn.classList.add('bg-gray-400', 'cursor-default');
+                  } else {
+                    followBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                    followBtn.classList.remove('bg-gray-400', 'cursor-default');
+                  }
+
+                  // Optionally update followers count if current user is viewing own profile
+                  if (currentUsername === "{{ username }}") {
+                    const followersCountBtn = document.getElementById('followersCount');
+                    if (followersCountBtn) {
+                      followersCountBtn.textContent = data.followers_count;
+                    }
+                  }
+                } else {
+                  alert(data.error || 'Failed to update follow status');
+                }
+              } catch (error) {
+                alert('Error updating follow status');
+              }
+            });
+
+            div.appendChild(img);
+            div.appendChild(userInfoDiv);
+            div.appendChild(followBtn);
+          } else {
+            div.appendChild(img);
+            div.appendChild(userInfoDiv);
+          }
+
+      return div;
+    }
+
+    async function loadUserList(type) {
+      currentListType = type;
+      modalTitle.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+      userList.innerHTML = '<p>Loading...</p>';
+      searchInput.value = '';
+
+      try {
+        const response = await fetch(`/api/users/{{ username }}/${type}`);
+        const data = await response.json();
+        if (data.success) {
+          allUsers = data[type];
+          renderUserList(allUsers);
+          followModal.classList.remove('hidden');
+        } else {
+          userList.innerHTML = '<p class="text-red-500">Failed to load users.</p>';
+        }
+      } catch (error) {
+        userList.innerHTML = '<p class="text-red-500">Error loading users.</p>';
+      }
+    }
+
+    function renderUserList(users) {
+      userList.innerHTML = '';
+      if (users.length === 0) {
+        userList.innerHTML = '<p>No users found.</p>';
+        return;
+      }
+      users.forEach(user => {
+        const userElem = createUserElement(user);
+        userList.appendChild(userElem);
+      });
+    }
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      const filtered = allUsers.filter(user =>
+        user.username.toLowerCase().includes(query) || user.name.toLowerCase().includes(query)
+      );
+      renderUserList(filtered);
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      followModal.classList.add('hidden');
+    });
+
+    document.getElementById('followersCount').addEventListener('click', () => {
+      // Removed modal open to prevent modal showing on click
+      // loadUserList('followers');
+    });
+
+    document.getElementById('followingCount').addEventListener('click', () => {
+      // Removed modal open to prevent modal showing on click
+      // loadUserList('following');
+    });
+
+    // Added follow button event listener for searched_user.html followBtn
+    const followBtn = document.getElementById('followBtn');
+    if (followBtn && !followBtn.textContent.includes('Your Profile')) {
+      followBtn.addEventListener('click', async () => {
+        try {
+          const response = await fetch(`/api/follow/{{ username }}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+          });
+          const data = await response.json();
+          if (data.success) {
+            const isFollowing = data.is_following;
+            followBtn.textContent = isFollowing ? 'Following' : 'Follow';
+
+            if (isFollowing) {
+              followBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+              followBtn.classList.add('bg-gray-400', 'cursor-default');
+            } else {
+              followBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+              followBtn.classList.remove('bg-gray-400', 'cursor-default');
+            }
+
+            // Update followers count for the searched user profile
+            const followersCountBtn = document.getElementById('followersCount');
+            if (followersCountBtn) {
+              const countSpan = followersCountBtn.querySelector('span.font-semibold');
+              if (countSpan) {
+                countSpan.textContent = data.target_user_followers_count;
+              } else {
+                followersCountBtn.textContent = data.target_user_followers_count + " followers";
+              }
+            }
+            // Optionally update current user's followers and following counts if needed
+            if ("{{ current_user_username }}" === "{{ current_user_username }}") {
+              const currentUserFollowersCountBtn = document.getElementById('currentUserFollowersCount');
+              if (currentUserFollowersCountBtn) {
+                const countSpan = currentUserFollowersCountBtn.querySelector('span.font-semibold');
+                if (countSpan) {
+                  countSpan.textContent = data.current_user_followers_count;
+                } else {
+                  currentUserFollowersCountBtn.textContent = data.current_user_followers_count + " followers";
+                }
+              }
+              const currentUserFollowingCountBtn = document.getElementById('currentUserFollowingCount');
+              if (currentUserFollowingCountBtn) {
+                const countSpan = currentUserFollowingCountBtn.querySelector('span.font-semibold');
+                if (countSpan) {
+                  countSpan.textContent = data.current_user_following_count;
+                } else {
+                  currentUserFollowingCountBtn.textContent = data.current_user_following_count + " following";
+                }
+              }
+            }
+          } else {
+            alert(data.error || 'Failed to update follow status');
+          }
+        } catch (error) {
+          alert('Error updating follow status');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
