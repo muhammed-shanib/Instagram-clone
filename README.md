@@ -4,7 +4,7 @@ A modern, full-stack Instagram replica developed with **FastAPI** and integrated
 
 ---
 
-##  Features
+##  Features 
 
 *   **Secure Authentication:** Integrated token validation utilizing Firebase ID tokens handled cleanly via custom FastAPI middleware dependencies.
 *   **Dynamic Feed Generation:** Chronological chronological timeline featuring post aggregation extracted strictly from creators you follow.
