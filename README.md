@@ -39,3 +39,25 @@ Before setting things up locally, ensure you have the following installed:
    ```bash
    git clone [https://github.com/YOUR_USERNAME/instagram-clone.git](https://github.com/YOUR_USERNAME/instagram-clone.git)
    cd instagram-clone
+
+## Environment Isolation & Dependencies Configuration:
+
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+## Configure Firebase Service Account Credentials:
+
+Download your private Service Account key json folder out of the Firebase Console.
+
+Save it locally as firebase-credentials.json (Ensure this file remains listed inside your .gitignore).
+
+Export your global runtime environmental pointer pointing to the path location of the configuration file:
+
+Project Structure
+
+├── static/              # CSS Stylesheets, Clientside JS Scripts, Placeholders
+├── templates/           # Jinja2 HTML views (home, login, profile, post etc.)
+├── main.py              # Central application core routing & middleware controls
+├── requirements.txt     # Python production libraries matrix
+└── .gitignore           # Ignored source paths tracking prevention control
