@@ -4,7 +4,7 @@ A modern, full-stack Instagram replica developed with **FastAPI** and integrated
 
 ---
 
-## 🚀 Features
+##  Features
 
 *   **Secure Authentication:** Integrated token validation utilizing Firebase ID tokens handled cleanly via custom FastAPI middleware dependencies.
 *   **Dynamic Feed Generation:** Chronological chronological timeline featuring post aggregation extracted strictly from creators you follow.
@@ -15,7 +15,7 @@ A modern, full-stack Instagram replica developed with **FastAPI** and integrated
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 *   **Backend Framework:** FastAPI (Asynchronous Python)
 *   **Database Matrix:** Google Cloud Firestore (NoSQL Architecture)
@@ -25,7 +25,7 @@ A modern, full-stack Instagram replica developed with **FastAPI** and integrated
 
 ---
 
-## 📋 Prerequisites
+##  Prerequisites
 
 Before setting things up locally, ensure you have the following installed:
 *   Python 3.9+
@@ -33,7 +33,7 @@ Before setting things up locally, ensure you have the following installed:
 
 ---
 
-## 🔧 Installation & Setup
+##  Installation & Setup
 
 1. **Clone the Repository:**
    ```bash
